@@ -31,7 +31,7 @@
  * - 22 May 2017, V1.0.1, Boting Ren
  * 1. renamed Class name and added prefix for several private variables
  * 2. removed printf output
- * 3. added new private function
+ * 3. removed code working for version 1 firmware
  * 4. replaced class private variables by using local variable in stack area
  * 5. removed removed timer and Cache feature
  * 6. other small improvements
@@ -62,7 +62,9 @@ MiCS6814_GasSensor::~MiCS6814_GasSensor()
 {
     HeaterPower(false);    // turn off the heater
     if (NULL != _i2c_p)
+    {
         delete  _i2c_p;
+    }
 }
 
 
@@ -71,32 +73,39 @@ READ_ERROR_TYPE MiCS6814_GasSensor::read_Multibytes(unsigned char addr_reg, unsi
     char cmd[2], val[4];     // write buf, read buf
     uint8_t checksum=0;
 
-    if (ret_val==NULL)  return NULL_RETURN_BUFFER_PTR;       // ret_val is a NULL pointer
-    if(write_len>2 || write_len<1) return WRITE_LENGTH_ERROR;      // write_len is wrong
-    if (read_len!=2 && read_len!=4) return READ_LENGTH_ERROR;    // read_len is wrong
+    if (ret_val==NULL) {
+        return NULL_RETURN_BUFFER_PTR;     // ret_val is a NULL pointer
+    }
+    if(write_len>2 || write_len<1) {
+        return WRITE_LENGTH_ERROR;         // write_len is wrong
+    }
+    if (read_len!=2 && read_len!=4) {
+        return READ_LENGTH_ERROR;          // read_len is wrong
+    }
     *ret_val=0;     // clear return buf
 
     cmd[0] = addr_reg;
-    if (write_len==2)    cmd[1] = __dta;
+    if (write_len==2) {
+        cmd[1] = __dta;
+    }
     _i2c.write(_address, cmd, write_len);
 
     _i2c.read(_address, val, read_len);
 
-    if (read_len==2){
+    if (read_len==2) {
         *ret_val = (uint16_t) (val[0]<<8 | val[1]) ;   // set return value to caller
         #ifdef _DEBUG
-            if(*ret_val==0)  DEBUG_PRINT("read_Multibytes, *ret_val=0, addr_reg: 0x%x, write_len: %x, read_len: %x\r\n", addr_reg, write_len, read_len );
+        if(*ret_val==0)  DEBUG_PRINT("read_Multibytes, *ret_val=0, addr_reg: 0x%x, write_len: %x, read_len: %x\r\n", addr_reg, write_len, read_len );
         #endif
-    }else if (read_len==4){
+    }else if (read_len==4) {
         checksum = (uint8_t)(val[0] + val[1] + val[2]);
         if(checksum != val[3]){
-        	DEBUG_PRINT("checksum failed,   val[4]: 0x%x,   0x%x,   0x%x,   0x%x, checksum: 0x%x\r\n", val[0], val[1], val[2], val[3], checksum );
-        	DEBUG_PRINT("checksum failed i2c.read, addr_reg: 0x%x, write_len: %x, read_len: %x\r\n", addr_reg, write_len, read_len );
+            DEBUG_PRINT("checksum failed,   val[4]: 0x%x,   0x%x,   0x%x,   0x%x, checksum: 0x%x\r\n", val[0], val[1], val[2], val[3], checksum );
+            DEBUG_PRINT("checksum failed i2c.read, addr_reg: 0x%x, write_len: %x, read_len: %x\r\n", addr_reg, write_len, read_len );
             return CHECKSUM_ERROR;    //checksum is wrong
         }
         *ret_val = (uint16_t) ((val[1] << 8) + val[2]);
     }
-
     return READ_OK;
 }
 
@@ -127,7 +136,9 @@ uint16_t MiCS6814_GasSensor::readR0_A0(unsigned char _indix)
     //  version 2 : read A0_[_indix]
     ret_val= read_Multibytes(CMD_READ_EEPROM, A0_table[_indix], 2, 2, &readBuf);
     DEBUG_PRINT("A0_[%d]: %d,    ", _indix, readBuf);
-    if (ret_val == READ_OK)     return readBuf;
+    if (ret_val == READ_OK) {
+        return readBuf;
+    }
     // read failed, Rs[_indix]
     DEBUG_PRINT("A0_[%d] read error: %d\r\n", _indix, ret_val);
     return 0;
@@ -142,7 +153,9 @@ uint16_t MiCS6814_GasSensor::readRs_An(unsigned char _indix)
     //  version 2 : read An_[_indix]
     ret_val= read_Multibytes(An_table[_indix], 0, 1, 2, &readBuf);
     DEBUG_PRINT("An_[%d]: %d,    ", _indix, readBuf);
-    if (ret_val == READ_OK)     return readBuf;
+    if (ret_val == READ_OK) {
+        return readBuf;
+    }
     // read failed, Rs[_indix]
     DEBUG_PRINT("An_[%d] read error: %d\r\n", _indix, ret_val);
     return 0;
