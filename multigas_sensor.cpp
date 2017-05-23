@@ -29,11 +29,11 @@
  * @par     History
  * - 19 May 2017, V1.0.0, Boting Ren
  * - 22 May 2017, V1.0.1, Boting Ren
- * 1. renamed Class name and added prefix for several private variables
+ * 1. changed class name and private variables name
  * 2. removed printf output
- * 3. removed code working for version 1 firmware
- * 4. replaced class private variables by using local variable in stack area
- * 5. removed removed timer and Cache feature
+ * 3. removed removed timer and Cache feature
+ * 4. removed code working for version 1 firmware
+ * 5. moved class private variables into member functions
  * 6. other small improvements
  *
  */

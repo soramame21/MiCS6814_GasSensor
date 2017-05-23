@@ -29,11 +29,11 @@
  * @par     History
  * - 19 May 2017, V1.0.0, Boting Ren
  * - 22 May 2017, V1.0.1, Boting Ren
- * 1. changed class name
- * 2. reduced Public APIs (measure_xxx())
+ * 1. changed class name and private variables name
+ * 2. removed Public APIs (measure_xxx())
  * 3. removed removed timer and Cache feature
- * 4. moved class private variables into member functions
- * 5. removed
+ * 4. removed code working for version 1 firmware
+ * 5. moved class private variables into member functions
  * 6. added more detail doxygen comments
  *
  */
