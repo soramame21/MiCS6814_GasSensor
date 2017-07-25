@@ -1,6 +1,6 @@
 /**
  ******************************************************************************
- * @file    multigas_sensor.h
+ * @file    MiCS6814_GasSensor.h
  * @author  Boting Ren
  * @version V1.0.1
  * @date    22 May 2017
@@ -25,28 +25,25 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
- * @par     History
- * - 19 May 2017, V1.0.0, Boting Ren
- * - 22 May 2017, V1.0.1, Boting Ren
- * 1. changed class name and private variables name
- * 2. removed Public APIs (measure_xxx())
- * 3. removed removed timer and Cache feature
- * 4. removed code working for version 1 firmware
- * 5. moved class private variables into member functions
- * 6. added more detail doxygen comments
- *
  */
+
+/**
+ *  Library for "MiCS-6814 Multichannel Gas Sensor" from Switch Science
+ *    https://www.switch-science.com/catalog/2512/
+ *
+ *  For more information about the Multichannel Gas Sensor:
+ *    http://wiki.seeed.cc/Grove-Multichannel_Gas_Sensor/
+ */
+
+
 #ifndef MBED_MULTIGAS_SENSOR_H
 #define MBED_MULTIGAS_SENSOR_H
 
 #include "mbed.h"
 
-//#define _DEBUG
-
 #define SLAVE_ADDRESS_MiCS6814  (0x04<<1)
 
-#define ADDR_IS_SET             0           // This is read at initialization time, if 1126, set
+#define ADDR_IS_SET             0
 #define ADDR_FACTORY_ADC_NH3    2
 #define ADDR_FACTORY_ADC_CO     4
 #define ADDR_FACTORY_ADC_NO2    6
@@ -54,9 +51,7 @@
 #define ADDR_USER_ADC_HN3       8
 #define ADDR_USER_ADC_CO        10
 #define ADDR_USER_ADC_NO2       12
-#define ADDR_IF_CALI            14          // IF USER HAD CALI
-
-#define ADDR_I2C_ADDRESS        20
+#define ADDR_IF_CALI            14
 
 #define CH_VALUE_NH3            1
 #define CH_VALUE_CO             2
@@ -74,6 +69,16 @@
 #define CMD_CONTROL_LED         10
 #define CMD_CONTROL_PWR         11
 
+#define HEATER_ON               1
+#define HEATER_OFF              0
+
+#if !defined(I2C_SDA) && defined(SDA)
+#define I2C_SDA SDA
+#endif
+
+#if !defined(I2C_SCL) && defined(SCL)
+#define I2C_SCL SCL
+#endif
 
 #ifdef _DEBUG
 extern Serial pc;
@@ -85,10 +90,35 @@ extern Serial pc;
 enum GAS_TYPE{NH3, CO, NO2, C3H8, C4H10, CH4, H2, C2H5OH};
 enum READ_ERROR_TYPE{READ_OK, NULL_RETURN_BUFFER_PTR, WRITE_LENGTH_ERROR, READ_LENGTH_ERROR, CHECKSUM_ERROR};
 
+/**  Interface for controlling MiCS-6814 Multichannel Gas Sensor
+ *
+ * @code
+ * #include "mbed.h"
+ * #include "MiCS6814_GasSensor.h"
+ *
+ * Serial pc(USBTX, USBRX);
+ *
+ * #if defined(TARGET_LPC1768)
+ * MiCS6814_GasSensor sensor(p28, p27);
+ * #else
+ * MiCS6814_GasSensor sensor(I2C_SDA, I2C_SCL);
+ * #endif
+ *
+ * int main() {
+ *
+ *     while(1) {
+ *         pc.printf("NH3: %.2f ppm, CO: %.2f ppm, NO2: %.2f ppm, C3H8: %.2f ppm \r\n", sensor.getGas(NH3), sensor.getGas(CO), sensor.getGas(NO2), sensor.getGas(C3H8));
+ *         pc.printf("C4H10: %.2f ppm, CH4: %.2f ppm, H2: %.2f ppm, C2H5OH: %.2f ppm \r\n", sensor.getGas(C4H10), sensor.getGas(CH4), sensor.getGas(H2), sensor.getGas(C2H5OH));
+ *         wait(1);
+ *     }
+ * }
+ *
+ * @endcode
+ */
+
 /**
  *  @class   MiCS6814_GasSensor
- *  @brief   A mbed component library to measure gas data by using Grove - Multichannel Gas Sensor (seeed)
- *  Please refer the details of the sensor. http://wiki.seeed.cc/Grove-Multichannel_Gas_Sensor/
+ *  @brief   A mbed component library to measure concentration value for 8 type of gases by using MiCS6814 - Multichannel Gas Sensor (seeed)
  *
  */
 
@@ -97,40 +127,27 @@ class MiCS6814_GasSensor{
 public:
     /** Create a MiCS6814_GasSensor instance
      *  the sensor is connected to specified I2C pins with specified address
-     *  1. create an I2C instance
-     *  2. initialize private variables.
      *
      * @param[in] sda I2C-bus SDA pin
      * @param[in] scl I2C-bus SCL pin
      * @param[in] slave_adr (option) I2C-bus address (default: 0x04<<1)
-     * @par sample code (K64F)
-     *  MiCS6814_GasSensor gas(I2C_SDA, I2C_SCL);
      */
-    MiCS6814_GasSensor(PinName sda, PinName sck, char slave_adr = SLAVE_ADDRESS_MiCS6814);
+    MiCS6814_GasSensor(PinName sda, PinName scl, char slave_adr = SLAVE_ADDRESS_MiCS6814);
 
     /** Create a MiCS6814_GasSensor instance
      *  the sensor is connected to specified I2C pins with specified address
-     *  1. pass an I2C instance,
-     *  2. then initialize private variables.
      *
      * @param[in] i2c_obj I2C object (instance)
      * @param[in] slave_adr (option) I2C-bus address (default: 0x04<<1)
-     * @par sample code (K64F)
-     *  I2C MySlave(I2C_SDA, I2C_SC);
-     *  MiCS6814_GasSensor gas(MySlave);
      */
     MiCS6814_GasSensor(I2C &i2c_obj, char slave_adr = SLAVE_ADDRESS_MiCS6814);
 
     /** Destructor of MiCS6814_GasSensor
-     *  1. Power off heater
-     *  2. Release allocated heap memory.
      */
     virtual ~MiCS6814_GasSensor();
 
     /** Initialize MiCS6814_GasSensor
-     *  1. Read firmware version from sensor
-     *  2. Power on heater
-     *  3. Clear private variables
+     *  Read firmware version from sensor and power on heater
      */
     void initialize(void);
 
@@ -138,26 +155,26 @@ public:
      *
      *  @param[in] gas_type one of gas type defined at enum GAS_TYPE
      *  @return the measured concentration of specific gas type (ppm)
-     *  @par sample code
-     *   val = calcGas(C3H8);
      */
-    float calcGas(const enum GAS_TYPE gas_type);
+    float getGas(const enum GAS_TYPE gas_type);
 
 private:
 
     I2C  *_i2c_p;
     I2C  &_i2c;
-    char _address;     //I2C address of this MCU
+    char _address;       //I2C address of this MCU
+
     /** Check firmware version of sensor
-     *  only support 2
+     *  only support version 2
      */
     void CheckFirmwareVersion(void);
 
     /** Turn On/Off sensor heater
      *
-     * @param[in] Heater_On_flag   True: Turn on,  False: Turn off
+     * @param[in] Switch_On   1: Turn on,  0: Turn off
      */
-    void HeaterPower(bool Heater_On_flag);
+    void HeaterPower(const unsigned char Switch_On);
+
     /** Read 16-bit data from sensor
      *
      * @param[in] reg_addr  register adderss
@@ -172,19 +189,16 @@ private:
     /** Read A0_[x] of sensor
      *
      * @param[in] index  {0,1,2}
-     * @return return A0_[x] for version 2
+     * @return return A0_[x]
      */
-    uint16_t readR0_A0(unsigned char _indix);
+    uint16_t readR0_A0(unsigned char index);
 
     /** Read An_[x] of sensor
      *
      * @param[in] index  {0,1,2}
-     * @return return An_[x] for version 2
+     * @return return An_[x]
      */
-    uint16_t readRs_An(unsigned char _indix);
-
+    uint16_t readRs_An(unsigned char index);
 };
-
-
 
 #endif // MBED_MULTIGAS_SENSOR_H
