@@ -87,7 +87,7 @@ extern Serial pc;
 #define DEBUG_PRINT(...)
 #endif
 
-enum GAS_TYPE{NH3, CO, NO2, C3H8, C4H10, CH4, H2, C2H5OH};
+enum GAS_TYPE{CO, NO2, NH3, C3H8, C4H10, CH4, H2, C2H5OH};
 enum READ_ERROR_TYPE{READ_OK, NULL_RETURN_BUFFER_PTR, WRITE_LENGTH_ERROR, READ_LENGTH_ERROR, CHECKSUM_ERROR};
 
 /**  Interface for controlling MiCS-6814 Multichannel Gas Sensor

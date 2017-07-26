@@ -146,7 +146,7 @@ uint16_t MiCS6814_GasSensor::readRs_An(unsigned char index)
 float MiCS6814_GasSensor::getGas(const GAS_TYPE gas_type)
 {
     int A0_[3], An_[3];
-    const unsigned char GasType_2index[8] = {0, 1, 2, 0, 0, 1, 1, 1};
+    const unsigned char GasType_2index[8] = {1, 2, 0, 0, 0, 1, 1, 1};
     unsigned char index = GasType_2index[gas_type];
     float Ratio[3];        //will be calculated. Ratio 0,1,2
 
