@@ -1,4 +1,4 @@
-# multi-gas-sensor-lib
+# MiCS6814_GasSensor
 This is a mbed-os 5 driver for [MiCS-6814 Multichannel Gas Sensor (seeed)](http://wiki.seeed.cc/Grove-Multichannel_Gas_Sensor/)
 
 ## Hardware
